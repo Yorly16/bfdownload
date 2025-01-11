@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BF DOWNLOAD YOUTUBE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        input[type="text"] {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 300px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        .bottom-right {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            font-style: italic;
+            font-size: 18px;  /* Puedes ajustar el tamaño según lo prefieras */
+            color: #333;
+        }
+    </style>
+    <script>
+        let intervalId;
+
+        function checkDownloadStatus() {
+            fetch('/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'in_progress') {
+                        document.getElementById('status').innerText = 'Descarga en progreso...';
+                    } else if (data.status === 'completed') {
+                        document.getElementById('status').innerText = 'Descarga completada: ' + data.title;
+                        alert('Descarga completada: ' + data.title);
+                        clearInterval(intervalId);
+                    } else if (data.status === 'audio_completed') {
+                        document.getElementById('status').innerText = 'Audio descargado: ' + data.title;
+                        alert('Audio descargado: ' + data.title);
+                        clearInterval(intervalId);
+                    } else if (data.status === 'error_but_downloaded') {
+                        document.getElementById('status').innerText = 'Tu archivo se ha descargado en formato .webm. Puedes convertirlo a MP3 en cualquier otra página. Gracias por usar nuestro servicio.';
+                        alert('Tu archivo se ha descargado en formato .webm. Puedes convertirlo a MP3 en cualquier otra página. Gracias por usar nuestro servicio.');
+                        clearInterval(intervalId);
+                    }
+                });
+        }
+
+        function startDownload(endpoint) {
+            fetch(endpoint, {
+                method: 'POST',
+                body: new FormData(document.getElementById('download-form'))
+            }).then(() => {
+                document.getElementById('status').innerText = 'Iniciando la descarga...';
+                intervalId = setInterval(checkDownloadStatus, 2000);
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>DOWNLOAD VIDEOS DE YOUTUBE</h1>
+    <form id="download-form" onsubmit="event.preventDefault();">
+        <input type="text" name="url" placeholder="Ingrese la URL del video de YouTube" required>
+        <div class="button-container">
+            <button type="button" onclick="startDownload('/download')">Descargar Video</button>
+            <button type="button" onclick="startDownload('/download_audio')">Descargar Audio MP3</button>
+        </div>
+    </form>
+    <p id="status"></p>
+    <p class="bottom-right">for BF</p>
+</body>
+</html>
